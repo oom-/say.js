@@ -59,11 +59,12 @@ say.speak(text, voice || null, speed || null, callback || null)
 
 #### Export Audio:
 
-* MacOS / Windows Only
+* MacOS & Windows Only (Windows ignores endian and data type parts of the dataFormat, can only output sample size to 8 or 16 bit)
 * Speed: 1 = 100%, 0.5 = 50%, 2 = 200%, etc
+* dataFormat: As per [macOS say](https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/say.1.html) e.g. "BEF16@22100" is big endian, floating point, 16bit, 22100kHz, defaults to "LEF32@32000" if unspecified
 
 ```javascript
-say.export(text, voice || null, speed || null, filename, callback || null)
+say.export(text, voice || null, speed || null, filename, callback || null, dataFormat || null)
 ```
 
 #### Stop Speaking:
@@ -86,7 +87,7 @@ Platform | Speak | Export | Stop | Speed | Voice | List
 ---------|-------|--------|------|-------|-------|-----
 macOS    | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :no_entry_sign:
 Linux    | :white_check_mark: | :no_entry_sign:    | :white_check_mark: | :white_check_mark: | :white_check_mark: | :no_entry_sign:
-Windows  | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
+Windows  | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
 
 
 ## macOS Notes

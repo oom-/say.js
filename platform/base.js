@@ -3,7 +3,7 @@ const once = require('one-time')
 const symbolTTS = require('../symbol-tts.js')
 
 class SayPlatformBase {
-  constructor () {
+  constructor() {
     this.child = null
     this.baseSpeed = 0
   }
@@ -75,10 +75,11 @@ class SayPlatformBase {
    * @param {number|null} speed Speed of text (e.g. 1.0 for normal, 0.5 half, 2.0 double)
    * @param {string} filename Path to file to write audio to, e.g. "greeting.wav"
    * @param {Function|null} callback A callback of type function(err) to return.
+   * @param {string} dataFormat A dataFormat string as per macOS say e.g. "BEF16@22100"
    */
-  export (text, voice, speed, filename, callback) {
+  export(text, voice, speed, filename, callback, dataFormat) {
     if (typeof callback !== 'function') {
-      callback = () => {}
+      callback = () => { }
     }
 
     callback = once(callback)
@@ -95,13 +96,22 @@ class SayPlatformBase {
       })
     }
 
+    if (!dataFormat) {
+      dataFormat = 'LEF32@32000'
+    }
+    const dataFormatParts = /(BE|LE)(F|I|UI)(\d+)@(\d+)/.exec(dataFormat)
+    if (!dataFormatParts) {
+      throw new Error('Invalid dataFormat')
+    }
+    const dataFormatInfo = {
+      endian: dataFormatParts[1],
+      dataType: dataFormatParts[2],
+      sampleSize: parseInt(dataFormatParts[3], 10),
+      sampleRate: parseInt(dataFormatParts[4], 10)
+    }
+
     try {
-      var { command, args, pipedData, options } = this.buildExportCommand({
-        text: symbolTTS(text),
-        voice,
-        speed,
-        filename
-      })
+      var { command, args, pipedData, options } = this.buildExportCommand({ text: symbolTTS(text), voice, speed, filename, dataFormatInfo })
     } catch (error) {
       return setImmediate(() => {
         callback(error)
@@ -140,9 +150,9 @@ class SayPlatformBase {
    *
    * @param {Function|null} callback A callback of type function(err) to return.
    */
-  stop (callback) {
+  stop(callback) {
     if (typeof callback !== 'function') {
-      callback = () => {}
+      callback = () => { }
     }
 
     callback = once(callback)
@@ -160,7 +170,7 @@ class SayPlatformBase {
     callback(null)
   }
 
-  convertSpeed (speed) {
+  convertSpeed(speed) {
     return Math.ceil(this.baseSpeed * speed)
   }
 
@@ -168,9 +178,9 @@ class SayPlatformBase {
    * Get Installed voices on system
    * @param {Function} callback A callback of type function(err,voices) to return.
    */
-  getInstalledVoices (callback) {
+  getInstalledVoices(callback) {
     if (typeof callback !== 'function') {
-      callback = () => {}
+      callback = () => { }
     }
     callback = once(callback)
 

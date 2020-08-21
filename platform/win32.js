@@ -11,7 +11,7 @@ class SayPlatformWin32 extends SayPlatformBase {
     this.baseSpeed = BASE_SPEED
   }
 
-  buildSpeakCommand ({ text, voice, speed }) {
+  buildCommand ({text, voice, speed, filename, dataFormatInfo}) {
     let args = []
     let pipedData = ''
     let options = {}
@@ -27,6 +27,15 @@ class SayPlatformWin32 extends SayPlatformBase {
       psCommand += `$speak.Rate = ${adjustedSpeed};`
     }
 
+    if (filename) {
+      const audioBitsPerSample = (dataFormatInfo.sampleSize <= 8) ? 'Eight' : 'Sixteen'
+      const escapedFilename = filename.replace(/\\/g, '\\\\').replace(/"/g, '\\"\\"').replace(/`/g, '``')
+      psCommand += `$formatSampleSize = [System.Speech.AudioFormat.AudioBitsPerSample]::${audioBitsPerSample};`
+      psCommand += `$formatChannels = [System.Speech.AudioFormat.AudioChannel]::Mono;`
+      psCommand += `$format = New-Object System.Speech.AudioFormat.SpeechAudioFormatInfo ${dataFormatInfo.sampleRate}, $formatSampleSize, $formatChannels;`
+      psCommand += `$speak.SetOutputToWaveFile(\\"${escapedFilename}\\", $format);`
+    }
+
     psCommand += `$speak.Speak([Console]::In.ReadToEnd())`
 
     pipedData += text
@@ -36,6 +45,14 @@ class SayPlatformWin32 extends SayPlatformBase {
     return { command: COMMAND, args, pipedData, options }
   }
 
+  buildSpeakCommand ({text, voice, speed}) {
+    return this.buildCommand({text, voice, speed})
+  }
+
+  buildExportCommand ({text, voice, speed, filename, dataFormatInfo}) {
+    return this.buildCommand({text, voice, speed, filename, dataFormatInfo})
+  }
+  /*
   buildExportCommand ({ text, voice, speed, filename }) {
     let args = []
     let pipedData = ''
@@ -64,7 +81,7 @@ class SayPlatformWin32 extends SayPlatformBase {
     options.shell = true
 
     return { command: COMMAND, args, pipedData, options }
-  }
+  }*/
 
   runStopCommand () {
     this.child.stdin.pause()
