@@ -1,5 +1,6 @@
 const childProcess = require('child_process')
 const once = require('one-time')
+const symbolTTS = require('../symbol-tts.js')
 
 class SayPlatformBase {
   constructor () {
@@ -31,7 +32,11 @@ class SayPlatformBase {
         });
       }
 
-      let { command, args, pipedData, options } = this.buildSpeakCommand({ text, voice, speed })
+      let { command, args, pipedData, options } = this.buildSpeakCommand({
+        text: symbolTTS(text),
+        voice,
+        speed
+      })
 
       this.child = childProcess.spawn(command, args, options)
 
@@ -91,7 +96,12 @@ class SayPlatformBase {
     }
 
     try {
-      var { command, args, pipedData, options } = this.buildExportCommand({ text, voice, speed, filename })
+      var { command, args, pipedData, options } = this.buildExportCommand({
+        text: symbolTTS(text),
+        voice,
+        speed,
+        filename
+      })
     } catch (error) {
       return setImmediate(() => {
         callback(error)
